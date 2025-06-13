@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuscript Year Predictor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #2a5298;
+        }
+
+        .upload-area {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #2a5298;
+            border-radius: 10px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            background-color: #d6d6d6;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-text {
+            font-size: 1rem;
+            color: #2a5298;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            color: white;
+            background: #2a5298;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #1e3c72;
+        }
+
+        .result {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Manuscript Year Predictor</h1>
+        <p>Drag and drop an image or click to upload.</p>
+
+        <div class="upload-area" id="dropArea" onclick="document.getElementById('imageInput').click()">
+            <p class="upload-text">Drop image here or click to upload</p>
+            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+            <div class="preview-container" id="previewContainer"></div>
+        </div>
+
+        <button onclick="submitImage()">Predict Year</button>
+
+        <div id="result" class="result"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById("dropArea");
+
+        dropArea.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropArea.style.backgroundColor = "#d6d6d6";
+        });
+
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.style.backgroundColor = "#e0e0e0";
+        });
+
+        dropArea.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropArea.style.backgroundColor = "#e0e0e0";
+            const file = event.dataTransfer.files[0];
+            document.getElementById("imageInput").files = event.dataTransfer.files;
+            previewImage({ target: { files: [file] } });
+        });
+
+        function previewImage(event) {
+            const previewContainer = document.getElementById("previewContainer");
+            previewContainer.innerHTML = "";
+
+            if (event.target.files && event.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.maxWidth = "400px";
+                    img.style.borderRadius = "10px";
+                    img.style.marginTop = "10px";
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        function submitImage() {
+            const imageInput = document.getElementById("imageInput");
+            const resultDiv = document.getElementById("result");
+            const errorDiv = document.getElementById("error");
+
+            resultDiv.textContent = "";
+            errorDiv.textContent = "";
+
+            if (!imageInput.files.length) {
+                errorDiv.textContent = "Please select an image to upload.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", imageInput.files[0]);
+
+            fetch("http://127.0.0.1:5000/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.predicted_year) {
+                    resultDiv.textContent = `Predicted Year: ${data.predicted_year}`;
+                } else {
+                    errorDiv.textContent = "Prediction failed. Please try again.";
+                }
+            })
+            .catch(() => {
+                errorDiv.textContent = "Error connecting to the backend. Ensure the server is running.";
+            });
+        }
+    </script>
+
+</body>
+
+</html>
