@@ -13,7 +13,7 @@ CORS(app)  # Allow frontend to access backend API
 os.makedirs("uploads", exist_ok=True)
 
 # Load the trained model with error handling
-MODEL_PATH = os.path.abspath("C:/Users/91939/Downloads/LALITH/resnet50_19-04-2025_new.h5")  # Use absolute path
+MODEL_PATH = os.path.abspath("replace with model path")  # Use absolute path
 print(f"Loading model from: {MODEL_PATH}")
 
 try:
