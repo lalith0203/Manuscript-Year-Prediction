@@ -117,8 +117,6 @@ ResNet50 outperformed all other models, achieving **99% accuracy** and showing s
 ## 👨‍💻 Authors
 
 * **D. Lalith Kumar**
-* N. Jaya Sravan Kumar
-* Dhatri Gullapalli
 
 ---
 
